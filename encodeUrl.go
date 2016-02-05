@@ -22,6 +22,24 @@ func init() {
 	AddEncodeFunc(ifStringIsNotEmpty)
 }
 
+func reflectValue(obj interface{}) (val reflect.Value) {
+	if reflect.TypeOf(obj).Kind() != reflect.Struct {
+		val = reflect.ValueOf(obj).Elem()
+	} else if reflect.TypeOf(obj).Kind() != reflect.Ptr {
+		val = reflect.ValueOf(obj)
+	}
+	return
+}
+
+func reflectType(obj interface{}) (typ reflect.Type) {
+	if reflect.TypeOf(obj).Kind() != reflect.Struct {
+		typ = reflect.TypeOf(obj).Elem()
+	} else if reflect.TypeOf(obj).Kind() != reflect.Ptr {
+		typ = reflect.TypeOf(obj)
+	}
+	return
+}
+
 func Translate(obj interface{}) (url.Values, []error) {
 	if reflect.TypeOf(obj).Kind() != reflect.Struct &&
 		reflect.TypeOf(obj).Kind() != reflect.Ptr {
@@ -29,11 +47,13 @@ func Translate(obj interface{}) (url.Values, []error) {
 	}
 	var errs []error
 	values := url.Values{}
-	e := reflect.TypeOf(obj).Elem()
+
+	e := reflectType(obj)
 
 	for i := 0; i < e.NumField(); i++ {
 		field := e.Field(i)
-		structFieldValue := reflect.ValueOf(obj).Elem().FieldByName(field.Name)
+		rval := reflectValue(obj)
+		structFieldValue := rval.FieldByName(field.Name)
 		if structFieldValue.IsValid() {
 			tab := strings.Split(field.Tag.Get("url"), ",")
 			if len(tab) > 1 {
