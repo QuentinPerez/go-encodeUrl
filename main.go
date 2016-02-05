@@ -1,9 +1,10 @@
 package main
 
 import (
-	"os"
+	"fmt"
 
 	"github.com/QuentinPerez/encodeUrl/encoding"
+	"github.com/Sirupsen/logrus"
 )
 
 type Toto struct {
@@ -11,5 +12,9 @@ type Toto struct {
 }
 
 func main() {
-	encurl.PrintAllFunctions(os.Stdout)
+	values, errs := encurl.Translate(&Toto{"qperez"})
+	if errs != nil {
+		logrus.Fatal(errs)
+	}
+	fmt.Println(values)
 }

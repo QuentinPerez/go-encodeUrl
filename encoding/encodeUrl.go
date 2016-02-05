@@ -11,13 +11,24 @@ import (
 	"sync"
 )
 
+type Func func(obj interface{}) (string, bool, error)
+
+var (
+	funcs = make(map[string]Func)
+	lock  = sync.RWMutex{}
+)
+
+func init() {
+	AddEncodeFunc(ifStringIsNotEmpty)
+}
+
 func Translate(obj interface{}) (url.Values, []error) {
 	if reflect.TypeOf(obj).Kind() != reflect.Struct &&
 		reflect.TypeOf(obj).Kind() != reflect.Ptr {
 		return nil, []error{errors.New("obj must be a struct or pointer")}
 	}
+	var errs []error
 	values := url.Values{}
-	errs := make([]error, 1)
 	e := reflect.TypeOf(obj).Elem()
 
 	for i := 0; i < e.NumField(); i++ {
@@ -34,23 +45,19 @@ func Translate(obj interface{}) (url.Values, []error) {
 					} else if ok {
 						values.Add(tab[0], val)
 					}
+				} else {
+					errs = append(errs, fmt.Errorf("%v doesn't exist", tab[1]))
 				}
 				lock.RUnlock()
+			} else {
+				errs = append(errs, fmt.Errorf("No method for %v(%v) field", field.Name, tab[0]))
 			}
 		}
 	}
-	return values, errs
-}
-
-type Func func(obj interface{}) (string, bool, error)
-
-var (
-	funcs = make(map[string]Func)
-	lock  = sync.RWMutex{}
-)
-
-func init() {
-	AddEncodeFunc(ifStringIsNotEmpty)
+	if len(errs) > 0 {
+		return nil, errs
+	}
+	return values, nil
 }
 
 func AddEncodeFunc(fnct ...Func) (errs []error) {
@@ -74,7 +81,7 @@ func AddEncodeFunc(fnct ...Func) (errs []error) {
 
 func PrintAllFunctions(out io.Writer) {
 	lock.RLock()
-	for k, _ := range funcs {
+	for k := range funcs {
 		fmt.Fprintf(out, "%v\n", k)
 	}
 	lock.RUnlock()
