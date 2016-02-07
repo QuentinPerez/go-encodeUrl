@@ -12,6 +12,7 @@ import (
 )
 
 type Func func(obj interface{}) (string, bool, error)
+type OverloadFunc func(fieldName string, fieldTag reflect.StructTag) (fieldTagOverloaded reflect.StructTag)
 
 var (
 	funcs = make(map[string]Func)
@@ -40,7 +41,7 @@ func reflectType(obj interface{}) (typ reflect.Type) {
 	return
 }
 
-func Translate(obj interface{}) (url.Values, []error) {
+func Translate(obj interface{}, overload ...OverloadFunc) (url.Values, []error) {
 	if reflect.TypeOf(obj).Kind() != reflect.Struct &&
 		reflect.TypeOf(obj).Kind() != reflect.Ptr {
 		return nil, []error{errors.New("obj must be a struct or pointer")}
@@ -55,7 +56,11 @@ func Translate(obj interface{}) (url.Values, []error) {
 		rval := reflectValue(obj)
 		structFieldValue := rval.FieldByName(field.Name)
 		if structFieldValue.IsValid() {
-			tab := strings.Split(field.Tag.Get("url"), ",")
+			tag := field.Tag
+			if len(overload) > 0 {
+				tag = overload[0](field.Name, tag)
+			}
+			tab := strings.Split(tag.Get("url"), ",")
 			if len(tab) > 1 {
 				lock.RLock()
 				if validator, ok := funcs[tab[1]]; ok {
