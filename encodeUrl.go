@@ -25,6 +25,7 @@ func init() {
 		ifBoolIsFalse,
 		ifBoolIsTrue,
 		itoa,
+		itoaIfNotNil,
 	)
 }
 
