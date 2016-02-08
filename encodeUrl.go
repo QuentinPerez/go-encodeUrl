@@ -20,7 +20,10 @@ var (
 )
 
 func init() {
-	AddEncodeFunc(ifStringIsNotEmpty)
+	AddEncodeFunc(
+		ifStringIsNotEmpty,
+		ifBoolIsFalse,
+		ifBoolIsTrue)
 }
 
 func reflectValue(obj interface{}) (val reflect.Value) {
