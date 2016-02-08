@@ -23,7 +23,9 @@ func init() {
 	AddEncodeFunc(
 		ifStringIsNotEmpty,
 		ifBoolIsFalse,
-		ifBoolIsTrue)
+		ifBoolIsTrue,
+		itoa,
+	)
 }
 
 func reflectValue(obj interface{}) (val reflect.Value) {
