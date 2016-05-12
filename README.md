@@ -38,6 +38,16 @@ func main() {
 ```
 
 
+## Functions
+
+```console
+ifStringIsNotEmpty
+ifBoolIsFalse
+ifBoolIsTrue
+itoa
+itoaIfNotNil
+```
+
 ## Development
 
 Feel free to contribute :smiley::beers:
