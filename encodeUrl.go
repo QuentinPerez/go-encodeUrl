@@ -80,7 +80,7 @@ func Translate(obj interface{}, overload ...OverloadFunc) (url.Values, []error) 
 					errs = append(errs, fmt.Errorf("%v doesn't exist", tab[1]))
 				}
 				lock.RUnlock()
-			} else {
+			} else if tab[0] != "-" {
 				errs = append(errs, fmt.Errorf("No method for %v(%v) field", field.Name, tab[0]))
 			}
 		}
